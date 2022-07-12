@@ -26,10 +26,11 @@
 </template>
 
 <script setup>
-
+const route = useRoute()
 const shows = ref([])
 const page = ref(1)
-const { pending, data: apiRes } = await movieAPI("/trending/all/day")
+const { pending, data: apiRes } = await searchMovie(route.params.query)
+console.log(apiRes.value)
 shows.value = apiRes.value.results
 
 onMounted(() => {
@@ -38,7 +39,7 @@ onMounted(() => {
 
     if (bottomOfWindow) {
       page.value++
-      const { data } = await movieAPI("/trending/all/day", page.value)
+      const { data } = await movieAPI(route.params.query, page.value)
       shows.value = [...shows.value, ...data.value.results]
       console.log(data.value)
     }

@@ -1,15 +1,27 @@
 <template>
   <main class="navbar">
-    <h3>Rkflix</h3>
+    <NuxtLink to="/">
+      <h3>Rkflix</h3>
+    </NuxtLink>
     <div class="search">
       <input
         type="text"
         placeholder="Search a show or a movie..."
+        v-model="query"
       >
-      <button><img src="@/assets/search.png"></button>
+      <button @click="search"><img src="@/assets/search.png"></button>
     </div>
   </main>
 </template>
+
+<script setup>
+const query = ref("")
+
+const search = () => {
+  navigateTo(`/search/${query.value}`)
+}
+</script>
+
 
 <style lang="scss" scoped>
 .navbar {
