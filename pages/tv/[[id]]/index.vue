@@ -1,157 +1,98 @@
 <template>
-  <div>
-    <div v-if="pending">
-      Loading ...
-    </div>
-    <div v-else>
-      <div class="wrapper">
-        <div class="topsection">
-
+  <div class="container-noflex">
+    <div v-if="pending">Loading ...</div>
+    <div v-else class="wrapper">
+      <div class="topsection">
+        <div class="overlay">
           <img
             class="bg"
             :src="`https://image.tmdb.org/t/p/w1920_and_h800_bestv2/${tvshow.backdrop_path}`"
-          >
-          <div class="overlay">
-            <div
-              class="content"
-              v-if="step==0"
-            >
-              <i
-                class="arrow"
-                @click="$router.back()"
-              ></i>
-              <img
-                :src="`https://image.tmdb.org/t/p/w600_and_h900_bestv2/${tvshow.poster_path}`"
-                :alt="tvshow.original_title || tvshow.original_name"
+          />
+          <div class="content" v-if="step == 0">
+            <i class="arrow" @click="$router.back()"></i>
+            <img
+              :src="`https://image.tmdb.org/t/p/w600_and_h900_bestv2/${tvshow.poster_path}`"
+              :alt="tvshow.original_title || tvshow.original_name"
+            />
+            <div class="text">
+              <h1>{{ tvshow.original_title || tvshow.original_name }}</h1>
+              <h4>Popularity:</h4>
+              <ShowPie :vote="tvshow.vote_average" />
+              <h4>Overview:</h4>
+              <p>{{ tvshow.overview }}</p>
+              <select
+                placeholder="Season"
+                v-model="season"
+                @change="changeSeason"
               >
-              <div class="text">
-                <h1>{{tvshow.original_title || tvshow.original_name}}</h1>
-                <h4>Popularity:</h4>
-                <ShowPie :vote="tvshow.vote_average" />
-                <h4>Overview:</h4>
-                <p>{{tvshow.overview}}</p>
-                <select
-                  placeholder="Season"
-                  v-model="season"
-                  @change="changeSeason"
-                >
-                  <option
-                    disabled
-                    value="0"
-                  >Please select one</option>
-                  <template v-for="{name ,season_number} in tvshow.seasons">
-                    <option
-                      :value="season_number"
-                      v-if="season_number != 0"
-                    >{{name}}</option>
-                  </template>
-                </select>
-                <select
-                  placeholder="Season"
-                  v-model="episode"
-                  v-if="season != 0"
-                >
-                  <option
-                    disabled
-                    value="0"
-                  >Please select one</option>
-                  <option
-                    v-for="ep,i in episodes"
-                    :value="ep.episode_number"
-                  >{{ep.name}}</option>
-                </select>
-                <button
-                  v-if="episode && season"
-                  @click="watch"
-                >Watch Now !</button>
-                {{`S${season}E${episode}`}}
-              </div>
+                <option disabled value="0">Please select one</option>
+                <template v-for="{ name, season_number } in tvshow.seasons">
+                  <option :value="season_number" v-if="season_number != 0">
+                    {{ name }}
+                  </option>
+                </template>
+              </select>
+              <select placeholder="Season" v-model="episode" v-if="season != 0">
+                <option disabled value="0">Please select one</option>
+                <option v-for="(ep, i) in episodes" :value="ep.episode_number">
+                  {{ ep.name }}
+                </option>
+              </select>
+              <button v-if="episode && season" @click="watch">
+                Watch Now !
+              </button>
+              {{ `S${season}E${episode}` }}
             </div>
-            <div v-else>
-              <i
-                class="arrow"
-                @click="step=0"
-              ></i>
-              <div
-                id="player"
-                class="webtor"
-              />
-            </div>
-
           </div>
-
+          <div class="container" v-else>
+            <i class="arrow" @click="step = 0"></i>
+            <div class="wrapper-iframe">
+              <iframe
+                :src="`https://vidsrc.to/embed/tv/${route.params.id}/${season}/${episode}?autoplay=true`"
+                loading="lazy"
+                style="border: none; height: 100%; width: 100%"
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowfullscreen="true"
+              >
+              </iframe>
+            </div>
+          </div>
         </div>
-
       </div>
     </div>
   </div>
 </template>
 
-
-
-
 <script setup>
-const step = ref(0)
+const step = ref(0);
 
 const route = useRoute();
-const { pending, data: tvshow } = await movieAPI(`/tv/${route.params.id}`)
-const showPlayer = ref(true)
-const magnet = ref("")
-const season = ref(0)
-const episode = ref(0)
-const episodes = ref([])
-
+const { pending, data: tvshow } = await movieAPI(`/tv/${route.params.id}`);
+const showPlayer = ref(true);
+const magnet = ref("");
+const season = ref(0);
+const episode = ref(0);
+const episodes = ref([]);
 
 const changeSeason = async () => {
-  const { data } = await movieAPI(`/tv/${route.params.id}/season/${season.value}`)
-  episodes.value = data.value.episodes
-
-}
+  const { data } = await movieAPI(
+    `/tv/${route.params.id}/season/${season.value}`
+  );
+  episodes.value = data.value.episodes;
+};
 
 const watch = async () => {
   step.value = 1;
-  const movie = `${tvshow.value.original_title || tvshow.value.original_name} S${("0" + season.value).slice(-2)}E${("0" + episode.value).slice(-2)}`
-  const data = await $fetch('/api/get-magnet', { method: 'post', body: { movie } })
-  magnet.value = data.magnet
-  // showPlayer.value = true
-  document.querySelector('#player').innerHTML = "";
-  window.webtor.push({
-    id: 'player',
-    magnet: data.magnet,
-    on: function (e) {
-      if (e.name == window.webtor.TORRENT_FETCHED) {
-        console.log('Torrent fetched!', e.data);
-      }
-      if (e.name == window.webtor.TORRENT_ERROR) {
-        console.log('Torrent error!');
-      }
-    },
-    poster: `https://image.tmdb.org/t/p/w600_and_h900_bestv2/${tvshow.value.poster_path}`,
-    subtitles: [
-      {
-        srclang: 'en',
-        label: 'test',
-        src: 'https://raw.githubusercontent.com/andreyvit/subtitle-tools/master/sample.srt',
-        default: true,
-      }
-    ],
-    lang: 'en',
-    i18n: {
-      en: {
-        common: {
-          "prepare to play": "Preparing Video Stream... Please Wait...",
-        },
-        stat: {
-          "seeding": "Seeding",
-          "waiting": "Client initialization",
-          "waiting for peers": "Waiting for peers",
-          "from": "from",
-        },
-      },
-    },
+  const movie = `${
+    tvshow.value.original_title || tvshow.value.original_name
+  } S${("0" + season.value).slice(-2)}E${("0" + episode.value).slice(-2)}`;
+  const data = await $fetch("/api/get-magnet", {
+    method: "post",
+    body: { movie },
   });
+
   // return navigateTo(`${route.path}/watch`)
-}
+};
 </script>
 <style scoped lang="scss">
 .wrapper {
@@ -180,6 +121,10 @@ img {
   width: 100%;
   height: 100vh;
   .bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -237,7 +182,11 @@ img {
     height: 100%;
     .overlay {
       flex-direction: column;
+      height: auto;
+      min-height: 100vh;
       .content {
+        height: auto;
+        margin: 100px auto;
         flex-direction: column;
         .text {
           display: flex;
@@ -275,5 +224,26 @@ select {
   height: 40px;
   border: none;
   border-radius: 5px;
+}
+
+.container-noflex {
+  width: 100%;
+  height: 100%;
+}
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.wrapper-iframe {
+  width: 80%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  aspect-ratio: 16/9;
+  max-width: 1000px;
 }
 </style>

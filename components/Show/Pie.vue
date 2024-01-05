@@ -1,22 +1,18 @@
 <template>
-
-  <div
-    class="pie animate"
-    :style="`--p:${vote*10};--c:lightgreen`"
-  > {{vote*10}}%</div>
-
+  <div class="pie animate" :style="`--p:${vote * 10};--c:lightgreen`">
+    {{ parseFloat(vote * 10).toFixed(2) }}%
+  </div>
 </template>
 
 <script setup>
 const props = defineProps({
   vote: Number,
-})
-
+});
 </script>
 <style scoped lang="scss">
 .pie {
   --p: 10;
-  --b: 8px;
+  --b: 4px;
   --c: darkred;
   --w: 60px;
 
@@ -26,7 +22,7 @@ const props = defineProps({
   display: inline-grid;
   margin: 5px;
   place-content: center;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: bold;
   font-family: sans-serif;
 }
