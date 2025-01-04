@@ -6,6 +6,8 @@
     </div>
     <div v-else>
       <h2 class="title">Discover Your Favourites. </h2>
+      <h2 class="title">oooh rayanoo rayanoo. </h2>
+      <h2 class="title">Rayane l3tay mtram. </h2>
       <div class="container">
         <NuxtLink
           v-for="movie in shows"
