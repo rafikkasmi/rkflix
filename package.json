@@ -12,6 +12,6 @@
     "sass-loader": "^10.3.1"
   },
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0"
   }
 }
