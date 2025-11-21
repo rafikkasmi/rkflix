@@ -28,7 +28,7 @@
               <i class="arrow" @click="step = 0"></i>
               <div class="wrapper-iframe">
                 <iframe
-                  :src="`https://vidsrc.me/embed/movie/${route.params.id}?autoplay=true`"
+                  :src="`https://vidsrc-me.ru/embed/movie/${route.params.id}?autoplay=true`"
                   loading="lazy"
                   style="border: none; height: 100%; width: 100%"
                   allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
